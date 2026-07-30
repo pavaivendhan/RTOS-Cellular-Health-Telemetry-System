@@ -15,6 +15,12 @@
 // SCL = A5 (or SCL pin)
 // INT = 2
 
+// OLED Display (I2C)
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C // See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32 usually, but often 0x3C for 128x64 as well
+
 // GSM Module Software Serial
 #define GSM_RX 7
 #define GSM_TX 8

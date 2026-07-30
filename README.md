@@ -9,7 +9,8 @@ The system is built around an **Arduino UNO** microcontroller. It interfaces wit
 2.  **DS18B20 Temperature Sensor**: A 1-wire digital temperature sensor for measuring body temperature.
 3.  **AD8232 ECG Sensor**: An analog sensor that measures the electrical activity of the heart.
 4.  **20x4 LCD with I2C module**: Displays the vitals locally for the patient or on-site caretaker.
-5.  **GSM Modem (e.g., SIM800L or SIM900)**: Communicates with the Arduino via SoftwareSerial to send SMS alerts to a registered emergency contact when thresholds are breached.
+5.  **128x64 OLED Display**: An additional screen (over I2C) used to display vitals graphically or textually.
+6.  **GSM Modem (e.g., SIM800L or SIM900)**: Communicates with the Arduino via SoftwareSerial to send SMS alerts to a registered emergency contact when thresholds are breached.
 
 ## Hardware Connections (Pinout)
 
@@ -32,8 +33,8 @@ The system is built around an **Arduino UNO** microcontroller. It interfaces wit
 *   **LO-**: Digital Pin 11
 *   **LO+**: Digital Pin 10
 
-### I2C LCD 20x4
-*   **VCC**: 5V
+### I2C LCD 20x4 & OLED Display (Shared Bus)
+*   **VCC**: 5V (LCD) / 3.3V or 5V (OLED)
 *   **GND**: GND
 *   **SDA**: A4 (shared with MAX30100)
 *   **SCL**: A5 (shared with MAX30100)
@@ -51,6 +52,8 @@ The system is built around an **Arduino UNO** microcontroller. It interfaces wit
     *   `OneWire`
     *   `DallasTemperature`
     *   `MAX30100lib`
+    *   `Adafruit_GFX`
+    *   `Adafruit_SSD1306`
 2.  **Configuration**: Open `src/config.h` and change `EMERGENCY_PHONE_NUMBER` to your desired alert number (include the country code, e.g., `+1234567890`). You can also adjust the temperature and heart rate thresholds in this file.
 3.  **Upload**: Connect your Arduino UNO, select the correct COM port, and upload `src/HealthMonitor.ino`.
 

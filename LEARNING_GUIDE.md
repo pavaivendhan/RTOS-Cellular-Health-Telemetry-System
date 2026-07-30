@@ -6,7 +6,7 @@ This guide breaks down everything you need to know about this project so you can
 The core idea is to continuously monitor a patient's vital signs and automatically alert a caretaker if those signs indicate danger. We achieve this by bringing together three types of components:
 *   **Sensors**: To read physical data (temperature, heartbeat, ECG).
 *   **Microcontroller (Arduino)**: The "brain" that processes the sensor data, checks it against thresholds, and commands the output devices.
-*   **Output Devices**: An LCD for local display and a GSM Modem for remote SMS alerts.
+*   **Output Devices**: An LCD and an OLED display for local metrics, and a GSM Modem for remote SMS alerts.
 
 ## 2. The Sensors & How They Work
 
@@ -27,9 +27,9 @@ The core idea is to continuously monitor a patient's vital signs and automatical
 
 ## 3. The Output Devices
 
-### 20x4 LCD Display
-*   **What it does:** Shows real-time vitals.
-*   **Communication:** It also uses the **I2C** protocol. Notice how it shares the SDA and SCL pins with the MAX30100 sensor. They don't interfere with each other because they have different I2C addresses (e.g., the LCD is usually at address `0x27`).
+### 20x4 LCD and 128x64 OLED Displays
+*   **What it does:** Shows real-time vitals locally.
+*   **Communication:** They both use the **I2C** protocol. Notice how they share the SDA and SCL pins with the MAX30100 sensor. They don't interfere with each other because they all have different I2C addresses (e.g., the LCD is usually at address `0x27`, the OLED at `0x3C`, and the pulse sensor at another).
 
 ### GSM Modem (SIM800/SIM900)
 *   **What it does:** Connects to the cellular network to send SMS messages.
@@ -47,7 +47,7 @@ The code inside `HealthMonitor.ino` follows a classic embedded systems loop:
 2.  **Continuous Loop (`loop()`):**
     *   It checks the time. We don't want to read sensors every single millisecond (it's inefficient). We use a "non-blocking delay" with `millis()` to check the sensors every 2 seconds.
     *   **Read Phase:** It pulls the latest data from the MAX30100, DS18B20, and AD8232.
-    *   **Display Phase:** It updates the LCD screen with the fresh numbers.
+    *   **Display Phase:** It updates both the LCD and OLED screens with the fresh numbers.
     *   **Logic Phase:** It compares the readings to the thresholds defined in `config.h`.
         *   *If Temp > 38.0 OR Heart Rate > 100 OR Heart Rate < 60*, it flags an alert.
     *   **Action Phase:** If an alert is flagged and hasn't been sent yet, it executes `sendSMSAlert()`, firing off AT commands to the GSM modem.
