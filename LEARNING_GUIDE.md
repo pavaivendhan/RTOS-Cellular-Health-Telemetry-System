@@ -1,4 +1,4 @@
-# GSM Based Health Monitoring System - Learning Guide
+# RTOS-Driven Cellular Health Telemetry System - Learning Guide
 
 This guide breaks down everything you need to know about this project so you can confidently explain how it works to a recruiter, professor, or peer.
 

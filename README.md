@@ -1,6 +1,6 @@
 <div align="center">
 
-# GSM Based Health Monitoring System 🩺📱
+# RTOS-Driven Cellular Health Telemetry System 🩺📱
 
 [![Arduino](https://img.shields.io/badge/Platform-Arduino-00979D?style=for-the-badge&logo=arduino&logoColor=white)](https://www.arduino.cc/)
 [![C++](https://img.shields.io/badge/Language-C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)](https://isocpp.org/)
@@ -38,7 +38,7 @@ HealthMonitor/
 │   ├── HealthMonitor.ino     # Main execution loop & sensor fusion
 │   └── config.h              # Thresholds, PINs, & Emergency Contacts
 │
-├── GSM BASED HEALTH MONITORING SYSTEM (1).pdf # Project Documentation
+├── RTOS-Driven Cellular Health Telemetry System.pdf # Project Documentation
 ├── LEARNING_GUIDE.md         # Extended learning and tutorial
 └── README.md                 # This file
 ```
