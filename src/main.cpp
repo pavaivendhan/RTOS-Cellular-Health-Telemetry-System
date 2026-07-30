@@ -6,9 +6,9 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include "MAX30100_PulseOximeter.h"
+#include "config.h"
 #include <TinyGsmClient.h>
 #include <PubSubClient.h>
-#include "config.h"
 
 // --- Global Objects ---
 LiquidCrystal_I2C lcd(0x27, 20, 4);
