@@ -4,32 +4,35 @@ When adding this project to your resume or LinkedIn, here is how you should form
 
 ### Project Description for Resume
 
-**GSM-Based Remote Patient Health Monitoring System**
-*   Designed and developed an IoT-based embedded system using Arduino to continuously monitor critical patient vitals (Heart Rate, SpO2, Body Temperature, and ECG).
-*   Integrated multiple communication protocols including I2C (for pulse sensor and LCD), 1-Wire (for temperature sensor), and UART via SoftwareSerial (for GSM modem).
-*   Programmed a real-time alert system in C++ that triggers AT Commands to a GSM module, dispatching emergency SMS notifications when patient vitals breach programmed thresholds.
-*   Implemented analog signal processing to read ECG data via an ADC, including hardware-level 'leads-off' detection.
+**RTOS-Driven Cellular Health Telemetry System**
+*   Designed an enterprise-grade IoT edge device using an **ESP32** microcontroller and **FreeRTOS** to continuously monitor and stream patient vitals (Heart Rate, SpO2, Temperature, ECG).
+*   Architected a concurrent, multi-threaded C++ firmware structure to isolate sensor polling, local I2C display rendering, and network communications, preventing blocking operations.
+*   Integrated an LTE-M / NB-IoT cellular modem via Hardware UART to establish a robust TCP/IP connection.
+*   Engineered a cloud telemetry pipeline utilizing **MQTT** to securely publish real-time JSON payloads to a cloud broker over cellular networks.
+*   Implemented automated CI/CD pipelines using **GitHub Actions** and **PlatformIO** to ensure code quality and build stability across environments.
 
 ### Technical Skills to Add to your "Skills" Section
 
 **Programming Languages:**
-*   C/C++ (Embedded)
+*   C/C++ (Embedded & Object-Oriented)
 
 **Microcontrollers & Hardware:**
-*   Arduino Ecosystem (UNO, Mega, Nano)
+*   ESP32 (32-bit Architecture, Dual-Core)
 *   Analog-to-Digital Conversion (ADC)
-*   Sensor Integration (Biometric sensors, Temperature sensors)
-*   GSM/GPRS Modules (SIM800L/SIM900)
+*   Cellular IoT Modems (LTE-M, NB-IoT, SIM7000)
+
+**Operating Systems & Concepts:**
+*   FreeRTOS (Tasks, Queues, Mutexes, Concurrency)
+*   Multithreading / Real-Time Systems
 
 **Communication Protocols:**
+*   MQTT (Message Queuing Telemetry Transport)
 *   I2C (Inter-Integrated Circuit)
-*   UART / Serial Communication
+*   UART / Hardware Serial
 *   1-Wire Protocol
-*   AT Commands (Hayes Command Set)
 
-**Core Competencies:**
+**Core Competencies & Tools:**
+*   PlatformIO Build System
+*   GitHub Actions (CI/CD)
 *   Embedded Systems Design
-*   Hardware/Software Interfacing
-*   IoT (Internet of Things) Edge Devices
-*   System Logic & Threshold processing
-*   Remote Telemetry / Telemedicine Concepts
+*   IoT (Internet of Things) Edge Architecture
