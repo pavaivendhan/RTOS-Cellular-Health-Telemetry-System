@@ -7,8 +7,11 @@
 #include <DallasTemperature.h>
 #include "MAX30100_PulseOximeter.h"
 #include "config.h"
-#include <TinyGsmClient.h>
-#include <PubSubClient.h>
+
+// LMIC LoRaWAN Library
+#include <lmic.h>
+#include <hal/hal.h>
+#include <SPI.h>
 
 // --- Global Objects ---
 LiquidCrystal_I2C lcd(0x27, 20, 4);
@@ -16,11 +19,6 @@ Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature tempSensor(&oneWire);
 PulseOximeter pox;
-
-HardwareSerial SerialGSM(2); // Use UART2
-TinyGsm modem(SerialGSM);
-TinyGsmClient client(modem);
-PubSubClient mqtt(client);
 
 // --- FreeRTOS Definitions ---
 struct VitalsData {
@@ -39,6 +37,67 @@ TaskHandle_t TaskTelemetryHandle;
 
 void onBeatDetected() {
     // Optional beat callback
+}
+
+// --- LMIC Callbacks and Config ---
+void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
+void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
+void os_getDevKey (u1_t* buf) { memcpy_P(buf, APPKEY, 16);}
+
+const lmic_pinmap lmic_pins = {
+    .nss = LORA_NSS,
+    .rxtx = LMIC_UNUSED_PIN,
+    .rst = LORA_RST,
+    .dio = {LORA_DIO0, LORA_DIO1, LORA_DIO2},
+};
+
+static uint8_t telemetryData[6];
+static osjob_t sendjob;
+const unsigned TX_INTERVAL = 30; // Schedule TX every 30 seconds
+
+void do_send(osjob_t* j) {
+    if (LMIC.opmode & OP_TXRXPEND) {
+        Serial.println(F("OP_TXRXPEND, not sending"));
+    } else {
+        VitalsData vitals;
+        // Peek latest vitals
+        if (xQueuePeek(vitalsQueue, &vitals, 0) == pdPASS) {
+            // Compress data to bytes for LoRa transmission
+            // e.g. HR: 72 -> 72, SpO2: 98.5 -> 98, Temp: 36.5 -> 365
+            telemetryData[0] = (uint8_t)vitals.heartRate;
+            telemetryData[1] = (uint8_t)vitals.spO2;
+            int16_t tempScaled = (int16_t)(vitals.temperature * 10);
+            telemetryData[2] = (tempScaled >> 8) & 0xFF;
+            telemetryData[3] = tempScaled & 0xFF;
+            telemetryData[4] = (vitals.ecgValue >> 8) & 0xFF;
+            telemetryData[5] = vitals.ecgValue & 0xFF;
+
+            LMIC_setTxData2(1, telemetryData, sizeof(telemetryData), 0);
+            Serial.println(F("Packet queued"));
+        }
+    }
+}
+
+void onEvent (ev_t ev) {
+    switch(ev) {
+        case EV_JOINING:
+            Serial.println(F("EV_JOINING"));
+            break;
+        case EV_JOINED:
+            Serial.println(F("EV_JOINED"));
+            LMIC_setLinkCheckMode(0);
+            break;
+        case EV_JOIN_FAILED:
+            Serial.println(F("EV_JOIN_FAILED"));
+            break;
+        case EV_TXCOMPLETE:
+            Serial.println(F("EV_TXCOMPLETE"));
+            // Schedule next transmission
+            os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
+            break;
+        default:
+            break;
+    }
 }
 
 // --- Tasks ---
@@ -104,37 +163,21 @@ void TaskUpdateDisplay(void *pvParameters) {
 
 void TaskTelemetry(void *pvParameters) {
     (void) pvParameters;
-    VitalsData vitals;
+    
+    // SPI Setup for LoRa
+    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_NSS);
 
-    // Initialize Modem
-    SerialGSM.begin(115200, SERIAL_8N1, GSM_RX, GSM_TX);
-    delay(3000);
-    modem.restart();
-    
-    // Connect to network
-    modem.gprsConnect(APN, GPRS_USER, GPRS_PASS);
-    
-    mqtt.setServer(MQTT_BROKER, MQTT_PORT);
+    // Initialize LMIC
+    os_init();
+    LMIC_reset();
+
+    // Start sending
+    do_send(&sendjob);
 
     for (;;) {
-        if (!mqtt.connected()) {
-            if (mqtt.connect("HealthMonitorESP32")) {
-                Serial.println("Connected to MQTT Broker");
-            }
-        }
-        
-        if (mqtt.connected()) {
-            mqtt.loop();
-            // Get latest vitals from queue (without removing them from queue)
-            if (xQueuePeek(vitalsQueue, &vitals, 0) == pdPASS) {
-                // Publish JSON payload
-                char payload[128];
-                snprintf(payload, sizeof(payload), "{\"hr\":%.1f,\"spo2\":%.1f,\"temp\":%.1f,\"ecg\":%d}", 
-                         vitals.heartRate, vitals.spO2, vitals.temperature, vitals.ecgValue);
-                mqtt.publish(MQTT_TOPIC, payload);
-            }
-        }
-        vTaskDelay(5000 / portTICK_PERIOD_MS); // Publish every 5 seconds
+        // Let LMIC handle radio tasks
+        os_runloop_once();
+        vTaskDelay(10 / portTICK_PERIOD_MS); // Yield
     }
 }
 
@@ -162,6 +205,7 @@ void setup() {
     // Create FreeRTOS Tasks
     xTaskCreatePinnedToCore(TaskReadSensors, "Sensors", 4096, NULL, 1, &TaskSensorsHandle, 1);
     xTaskCreatePinnedToCore(TaskUpdateDisplay, "Display", 4096, NULL, 1, &TaskDisplayHandle, 1);
+    // Increased stack size for LMIC
     xTaskCreatePinnedToCore(TaskTelemetry, "Telemetry", 8192, NULL, 1, &TaskTelemetryHandle, 0);
 }
 
