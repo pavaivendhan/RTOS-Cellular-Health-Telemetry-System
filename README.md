@@ -44,6 +44,7 @@ RTOS-Driven LoRaWAN Health Telemetry System/
 ├── platformio.ini            # Build system and LMIC dependency configuration
 ├── PROJECT_SUMMARY.md        # Technical breakdown of problems, sensors, & protocols
 ├── LEARNING_GUIDE.md         # Educational walkthrough of the codebase
+├── RTOS-LoRaWAN-Health-Telemetry-System.pdf # Project Documentation
 └── README.md                 # This file
 ```
 
